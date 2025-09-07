@@ -1,0 +1,29 @@
+# Virtual envs
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# OS/IDE junk
+.DS_Store
+.vscode/
+.idea/
+
+# Secrets & local data
+.env
+search_history.db
+
+# Model/vector artifacts
+faiss_store_openai.pkl
+faiss_store_openai/
+
+# Keys (never commit)
+textkey
+textkey.pub
+id_ed25519
+id_ed25519.pub
+*.pem
+*.key

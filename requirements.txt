@@ -1,0 +1,15 @@
+
+langchain>=0.3.0
+langchain-community>=0.3.0
+langchain-openai>=0.3.0
+sentence-transformers>=3.0.0
+faiss-cpu>=1.8.0
+unstructured>=0.15.0
+python-dotenv>=1.0.0
+streamlit>=1.35.0
+tiktoken>=0.7.0
+openai>=1.0.0
+fastapi>=0.115.0
+uvicorn>=0.30.0
+pydantic>=2.0.0
+requests>=2.31.0
