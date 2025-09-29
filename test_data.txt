@@ -1,0 +1,61 @@
+[URLs]
+1. https://en.wikipedia.org/wiki/Artificial_general_intelligence
+2. https://spectrum.ieee.org/agi-benchmark
+3. https://research.aimultiple.com/artificial-general-intelligence-singularity-timing/
+4. https://www.electropages.com/blog/2025/03/history-ai-key-milestones-impact-technology
+5. https://www.forbes.com/sites/craigsmith/2025/01/07/entering-the-artificial-general-intelligence-spectrum-in-2025/
+6. https://spectrum.ieee.org/ai-index-2025
+7. https://www.cognitivetoday.com/2025/04/artificial-general-intelligence-timeline-agi/
+8. https://www.crescendo.ai/news/latest-ai-news-and-updates
+
+[Queries]
+1. What is the definition of Artificial General Intelligence (AGI)?
+2. When did Herbert A. Simon predict machines would match human work?
+3. Who coined the term "Artificial Intelligence" at the Dartmouth Conference?
+4. What is the AIXI model proposed by Marcus Hutter?
+5. When was GPT-3 released, and how does it relate to AGI?
+6. What did Microsoft claim about GPT-4 in 2023?
+7. How many active AGI R&D projects were identified in a 2020 survey?
+8. When did OpenAI announce GPT-5?
+9. Who is Demis Hassabis, and what AGI timeline did he predict in 2025?
+10. What is the Turing Test, and how does it relate to AGI?
+11. When did Elon Musk predict AGI smarter than humans?
+12. What is the Human Brain Project, and when was it active?
+13. Who popularized the term AGI around 2002?
+14. What breakthrough did AlexNet represent in 2012?
+15. When did large multimodal models emerge?
+16. What did Geoffrey Hinton warn about AGI in 2023?
+17. What is the ARC-AGI test created by François Chollet?
+18. How many countries have active AGI projects per 2020 surveys?
+19. What is Nvidia's Isaac GR00T N1?
+20. When did Japan's Fifth Generation Computer Project start?
+21. What caused the AI winter in the late 1980s?
+22. How has deep learning advanced AGI research since 2012?
+23. What are the main challenges in achieving AGI by 2030?
+24. Why did Geoffrey Hinton leave Google in 2023?
+25. How might AGI impact unemployment, according to Elon Musk?
+26. What breakthroughs are needed for AGI, per David Silver?
+27. How does GPT-5's release in 2025 accelerate AGI timelines?
+28. What risks does AGI pose to humanity, per Nick Bostrom?
+29. How does whole brain emulation relate to AGI development?
+30. What philosophical debate surrounds AGI consciousness?
+31. How has the EU's Human Brain Project influenced AGI?
+32. Why is AGI considered an existential risk by some experts?
+33. How do large language models like GPT-4 show "sparks" of AGI?
+34. What economic impacts does the 2025 AI Index predict for AGI?
+35. How might AGI affect drug discovery, per Isomorphic Labs?
+36. Summarize the history of AGI research from 1950s to 2025.
+37. What are the key philosophical considerations for AGI?
+38. Describe current AGI research trends as of 2025.
+39. How might AGI transform society by 2030?
+40. What are expert predictions for AGI timelines?
+41. Explain the difference between AGI and narrow AI.
+42. What ethical issues arise with AGI sentience?
+43. How has OpenAI contributed to AGI progress?
+44. Discuss AGI's potential in robotics and multimodal models.
+45. What role does governance play in AGI development?
+46. Summarize the 2025 AI Index's findings on AGI benchmarks.
+47. How could AGI lead to universal basic income policies?
+48. What are the pros and cons of open-source AGI?
+49. Describe glimmers of AGI in 2025 models like Grok 4.
+50. How might AGI reshape healthcare and education?
