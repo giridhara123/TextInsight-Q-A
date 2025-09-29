@@ -9,45 +9,86 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQAWithSourcesChain
 
-# If your langchain-openai install uses OpenAI() it’s fine; if not, use ChatOpenAI()
-try:
-    from langchain_openai import OpenAI  # older/simple LLM interface
-    LLM_CLS = OpenAI
-    llm_kwargs = dict(temperature=0.9, max_tokens=500)
-except Exception:
-    from langchain_openai import ChatOpenAI  # chat interface
-    LLM_CLS = ChatOpenAI
-    llm_kwargs = dict(temperature=0.9, model="gpt-4o-mini")
+from transformers import pipeline
+import spacy
 
-# ----- Config -----
+# ---- Setup ----
 load_dotenv()
 st.set_page_config(page_title="TextInsight Engine", layout="wide")
 
+# Custom styles
 st.markdown("""
     <style>
-    .big-font {
-        font-size: 24px !important;
-        font-weight: bold;
-        color: #1f77b4;
-    }
-    .status-box {
-        background-color: #f0f2f6;
-        padding: 10px;
-        border-radius: 5px;
-    }
+    .big-font { font-size: 24px !important; font-weight: bold; color: #1f77b4; }
+    .status-box { background-color: #f0f2f6; padding: 10px; border-radius: 5px; }
     </style>
 """, unsafe_allow_html=True)
-
 st.markdown('<p class="big-font">TextInsight Engine</p>', unsafe_allow_html=True)
 
+# API + FAISS storage
 API_URL = "http://localhost:8000"
 folder_path = "faiss_store_openai"
-llm = LLM_CLS(**llm_kwargs)
-status_placeholder = st.empty()
+embedding_model = "sentence-transformers/all-MiniLM-L6-v2"
 
-# ----- Sidebar: URLs -----
+# Load LLM
+try:
+    from langchain_openai import OpenAI
+    llm = OpenAI(temperature=0.0, max_tokens=500)  # factual mode
+except Exception:
+    from langchain_openai import ChatOpenAI
+    llm = ChatOpenAI(temperature=0.0, model="gpt-4o-mini")
+
+# NLI + spaCy for hallucination detection
+nlp = spacy.load("en_core_web_sm")
+nli = pipeline("text-classification", model="roberta-large-mnli", device=-1)
+
+
+# ---- Utility Functions ----
+def extract_claims(answer: str, max_claims: int = 6):
+    """Extract factual claims from an answer using spaCy."""
+    doc = nlp(answer)
+    claims = []
+    for sent in doc.sents:
+        if "?" in sent.text or any(token.lemma_ in ["think", "believe"] for token in sent):
+            continue
+        claims.append(sent.text.strip())
+        if len(claims) >= max_claims:
+            break
+    return claims
+
+
+def detect_hallucination(claim, chunks, threshold=0.65):
+    """
+    Improved hallucination detection:
+    - Aggregate evidence across all chunks.
+    - If ANY chunk strongly supports the claim → Supported.
+    - Otherwise → Hallucination.
+    """
+    supported = False
+    contradicted = False
+
+    for chunk in chunks:
+        output = nli(f"Premise: {chunk.page_content} Hypothesis: {claim}")
+        result = output[0]
+        label, score = result["label"], result["score"]
+
+        if label == "ENTAILMENT" and score >= threshold:
+            supported = True
+            break  # no need to check further if we found strong support
+        elif label == "CONTRADICTION" and score >= threshold:
+            contradicted = True
+
+    if supported:
+        return False  # Not a hallucination
+    elif contradicted:
+        return True   # Direct contradiction
+    else:
+        return False  # NEUTRAL → treat as "Unverifiable but not hallucination"
+
+
+# ---- Sidebar: URLs ----
 with st.sidebar:
-    st.header("Add  Article URLs")
+    st.header("Add Article URLs")
     if "url_list" not in st.session_state:
         st.session_state.url_list = [""] * 3
 
@@ -68,42 +109,41 @@ with st.sidebar:
 
     process_url_clicked = st.button("Process URLs", type="primary", key="process_urls")
 
-# ----- Process URLs -> Build FAISS -----
+
+# ---- Process URLs ----
 if process_url_clicked:
     urls = [u.strip() for u in st.session_state.url_list if u.strip()]
     if not urls:
-        status_placeholder.error("Please enter at least one valid URL.")
+        st.error("Please enter at least one valid URL.")
     else:
         with st.spinner("Processing your URLs..."):
             try:
-                status_placeholder.text("Data Loading...Started...✅✅✅")
                 loader = UnstructuredURLLoader(urls=urls)
                 data = loader.load()
                 if not data:
-                    status_placeholder.warning("No content loaded from the provided URLs.")
+                    st.warning("No content loaded from the provided URLs.")
                     st.stop()
 
-                status_placeholder.text("Text Splitter...Started...✅✅✅")
                 splitter = RecursiveCharacterTextSplitter(
                     separators=['\n\n', '\n', '.', ','], chunk_size=1000
                 )
                 docs = splitter.split_documents(data)
 
-                status_placeholder.text("Embedding Vector Started Building...✅✅✅")
-                embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+                embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
                 vectorstore = FAISS.from_documents(docs, embeddings)
                 vectorstore.save_local(folder_path)
 
-                status_placeholder.success("URLs processed and embeddings saved successfully! ✅")
+                st.success("✅ URLs processed and embeddings saved successfully!")
             except Exception as e:
-                status_placeholder.error(f"An error occurred: {str(e)}")
+                st.error(f"An error occurred: {str(e)}")
 
-# ----- Query -----
+
+# ---- Query ----
 st.subheader("Ask a Question")
 with st.form(key="query_form", clear_on_submit=True):
     query = st.text_input(
         "Enter your question here:",
-        placeholder="e.g., ?",
+        placeholder="e.g., Who founded Zoho Corporation?",
         key="query_input"
     )
     submit_button = st.form_submit_button(label="Get Answer")
@@ -114,16 +154,29 @@ if submit_button and query:
     else:
         try:
             with st.spinner("Generating answer..."):
-                embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+                embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
                 vectorstore = FAISS.load_local(folder_path, embeddings, allow_dangerous_deserialization=True)
 
                 chain = RetrievalQAWithSourcesChain.from_chain_type(
-                    llm=llm, chain_type="stuff", retriever=vectorstore.as_retriever()
+                    llm=llm, chain_type="map_reduce", retriever=vectorstore.as_retriever(search_kwargs={"k": 6}),
+                    return_source_documents=True
                 )
                 result = chain.invoke({"question": query})
 
                 st.markdown("### Answer")
                 st.write(result["answer"])
+
+                hallucinations = []
+                claims = extract_claims(result["answer"])
+                for claim in claims:
+                    if detect_hallucination(claim, result.get("source_documents", [])):
+                        hallucinations.append(claim)
+
+                if hallucinations:
+                    st.warning("⚠️ Possible Hallucinations Detected:")
+                    for h in hallucinations:
+                        st.markdown(f"- {h}")
+
                 if result.get("sources"):
                     with st.expander("Sources", expanded=False):
                         for source in result["sources"].split("\n"):
@@ -142,7 +195,8 @@ if submit_button and query:
         except Exception as e:
             st.error(f"Error processing query: {str(e)}")
 
-# ----- History -----
+
+# ---- History ----
 st.subheader("Previous Searches")
 try:
     resp = requests.get(f"{API_URL}/searches/", timeout=5)
