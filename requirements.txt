@@ -1,0 +1,11 @@
+gradio==4.44.1
+langchain==0.3.1
+langchain_community==0.3.1
+langchain_core==0.3.6
+pandas==2.2.2
+pyprojroot==0.3.0
+python-dotenv==1.0.1
+PyYAML==6.0.2
+SQLAlchemy==2.0.35
+openai==1.50.1
+chromadb==0.5.7
